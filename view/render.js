@@ -273,8 +273,13 @@ can.extend(can.view, {
 				// a text node who's value is `func`'s return value.
 				function(el, parentNode){
 					// updates the text of the text node
-					update = function(newVal){
-						node.nodeValue = ""+newVal;
+					update = function(newVal) {
+						// Stupid IE won't let you set it if the type is unknown. Set text instead.
+						if(typeof node.nodeValue === 'unknown') {
+							node.text = ""+newVal;
+						} else {
+							node.nodeValue = ""+newVal;
+						}
 						teardownCheck(node.parentNode);
 					};
 					

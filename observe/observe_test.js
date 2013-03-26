@@ -210,7 +210,7 @@ test("remove nested attr", function(){
 	equals(undefined,  state.attr("properties.nested") );
 });
 
-test("remove item in nested array", function(){
+test("remove item in nested array", 4, function(){
 	var state = new can.Observe({
 		array : ["a", "b"]
 	});
@@ -219,10 +219,10 @@ test("remove item in nested array", function(){
 		equals(attr, "array.1");
 		equals(how, "remove")
 		same(old, ["b"]);
-	})
+	});
 	
 	state.removeAttr("array.1");
-	equals(undefined,  state.attr("array.1") );
+	equals(undefined, state.attr("array.1") );
 });
 
 test("remove nested property in item of array", function(){
