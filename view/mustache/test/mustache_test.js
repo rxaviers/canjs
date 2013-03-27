@@ -1310,6 +1310,15 @@ test("computes as helper parameters don't get converted", function() {
 })
 
 test("computes are supported in default helpers", function() {
+	var keys = function(obj) {
+		var result = []; // u.keys
+		for(var key in obj) {
+			if(obj.hasOwnProperty(key)) {
+				result.push(key);
+			}
+		}
+		return result;
+	}
 
   var staches = {
     "if" : "{{#if test}}if{{else}}else{{/if}}"
@@ -1323,13 +1332,14 @@ test("computes are supported in default helpers", function() {
   div.appendChild( can.view("count", new can.Observe.List([{},{}])) );
   ok(/There are 2 todos/.test(div.innerHTML), "got all text")
 
-  can.each(Object.keys(staches), function(result) {
-    var renderer = can.view.mustache("compute_" + result, staches[result]);
+  can.each(keys(staches), function(result) {
+    can.view.mustache("compute_" + result, staches[result]);
+
     var data = ["e", "a", "c", "h"];
     var div = document.createElement("div");
     var actual = can.view("compute_" + result, { test : can.compute(data) });
     div.appendChild(actual);
-    can.each(div.getElementsByTagName("span"), function(span) {
+    can.each(can.makeArray(div.getElementsByTagName("span")), function(span) {
       div.replaceChild(span.firstChild, span)
     });
     actual = div.innerHTML;
@@ -1344,8 +1354,9 @@ test("computes are supported in default helpers", function() {
     , "not_with" : "not{{#with test}}_{{/with}}_with"
   };
 
-  can.each(Object.keys(inv_staches), function(result) {
-    var renderer = can.view.mustache("compute_" + result, inv_staches[result]);
+  can.each(keys(inv_staches), function(result) {
+    can.view.mustache("compute_" + result, inv_staches[result]);
+
     var data = null;
     var div = document.createElement("div");
     var actual = can.view("compute_" + result, { test : can.compute(data) });
@@ -1487,7 +1498,7 @@ test("Functions and helpers should be passed the same context", function() {
 		}
 		else {
 			//fn is options
-			return fn.fn(this).trim().toString().toUpperCase();
+			return can.trim(fn.fn(this)).toString().toUpperCase();
 		}
 	});
 	
