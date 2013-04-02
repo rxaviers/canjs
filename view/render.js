@@ -274,13 +274,14 @@ can.extend(can.view, {
 				function(el, parentNode){
 					// updates the text of the text node
 					update = function(newVal) {
-						// Stupid IE won't let you set it if the type is unknown. Set text instead.
-						if(typeof node.nodeValue === 'unknown') {
-							node.text = ""+newVal;
-						} else {
+						try {
+							// if node.nodeValue is 'unknown', the node is not attached to anything anymore
+							// and there really isn't anything IE<=8 will let you do with it anyway.
 							node.nodeValue = ""+newVal;
+							teardownCheck(node.parentNode);
+						} catch(e) {
+							// thanks IE!
 						}
-						teardownCheck(node.parentNode);
 					};
 					
 					var parent = getParentNode(el, parentNode),

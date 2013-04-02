@@ -1519,8 +1519,8 @@ test("Functions and helpers should be passed the same context", function() {
 
 // https://github.com/bitovi/canjs/issues/153
 test("Interpolated values when iterating through an Observe.List should still render when not surrounded by a DOM node", function() {
-	var renderer = can.view.mustache('{{ #todos }}{{ name }}{{ /todos }}'),
-		renderer2 = can.view.mustache('{{ #todos }}<span>{{ name }}</span>{{ /todos }}'),
+	var noDomRenderer = can.view.mustache('{{ #todos }}{{ name }}{{ /todos }}'),
+		withDomRenderer = can.view.mustache('{{ #todos }}<span>{{ name }}</span>{{ /todos }}'),
 		todos = [ {id: 1, name: 'Dishes'}, {id: 2, name: 'Forks'} ],
 		data = { 
 			todos: new can.Observe.List(todos)
@@ -1529,20 +1529,30 @@ test("Interpolated values when iterating through an Observe.List should still re
 			todos: todos
 		},
 		div = document.createElement('div');
-		
-	div.appendChild(renderer2(arr));
-	equal(div.innerHTML, "<span>Dishes</span><span>Forks</span>", 'Array item rendered with DOM container');
+	
+	// when the data is given as an array:
+	div.appendChild(withDomRenderer(arr));
+	ok(div.childNodes.length == 2 && div.childNodes[0].innerHTML == 'Dishes' && div.childNodes[1].innerHTML == 'Forks', 'Array item rendered with DOM container');
 	div.innerHTML = '';
-	div.appendChild(renderer2(data));
-	equal(div.innerHTML, "<span>Dishes</span><span>Forks</span>", 'List item rendered with DOM container');
+
+	// when the data is given as a List:
+	div.appendChild(withDomRenderer(data));
+	ok(div.childNodes.length == 2 && div.childNodes[0].innerHTML == 'Dishes' && div.childNodes[1].innerHTML == 'Forks', 'List item rendered with DOM container');
 	div.innerHTML = '';
-	div.appendChild(renderer(arr));
+
+	// when there's no dom around an arrray:
+	div.appendChild(noDomRenderer(arr));
 	equal(div.innerHTML, "DishesForks", 'Array item rendered without DOM container');
 	div.innerHTML = '';
-	div.appendChild(renderer(data));
+
+	// when there's no dom around a List:
+	div.appendChild(noDomRenderer(data));
 	equal(div.innerHTML, "DishesForks", 'List item rendered without DOM container');
+
+	// changing the list:
+	data.todos[1].attr('name', 'Glasses');
 	data.todos.push({ id: 3, name: 'Knives' });
-	equal(div.innerHTML, "DishesForksKnives", 'New list item rendered without DOM container');
+	equal(div.innerHTML, "DishesGlassesKnives", 'New list item rendered without DOM container');
 });
 
 test("2 way binding helpers", function(){
@@ -1705,17 +1715,17 @@ test("HTML comment with helper", function(){
 		Todos = new can.Observe.List([
 			{id: 1, name: "Dishes"}
 		]),
-		compiled = new can.Mustache({text: text.join("\n")}).render({todos: Todos}),
+		compiled = new can.Mustache({text: text.join("")}).render({todos: Todos}),
 		div = document.createElement("div")
 
 	div.appendChild(can.view.frag(compiled));
 	equals(div.getElementsByTagName("ul")[0].getElementsByTagName("li").length, 1, "1 item in list");
-	equals(div.getElementsByTagName("ul")[0].getElementsByTagName("li")[0].childNodes.length, 7, "7 nodes in item #1");
+	equals(div.getElementsByTagName("ul")[0].getElementsByTagName("li")[0].childNodes.length, 3, "3 nodes in item #1");
 
 	Todos.push({id: 2, name: "Laundry"});
 	equals(div.getElementsByTagName("ul")[0].getElementsByTagName("li").length, 2, "2 items in list");
-	equals(div.getElementsByTagName("ul")[0].getElementsByTagName("li")[0].childNodes.length, 7, "7 nodes in item #1");
-	equals(div.getElementsByTagName("ul")[0].getElementsByTagName("li")[1].childNodes.length, 7, "7 nodes in item #2");
+	equals(div.getElementsByTagName("ul")[0].getElementsByTagName("li")[0].childNodes.length, 3, "3 nodes in item #1");
+	equals(div.getElementsByTagName("ul")[0].getElementsByTagName("li")[1].childNodes.length, 3, "3 nodes in item #2");
 
 	Todos.splice(0, 2);
 	equals(div.getElementsByTagName("ul")[0].getElementsByTagName("li").length, 0, "0 items in list");

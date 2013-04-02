@@ -1268,7 +1268,7 @@ test('live binding with html comment', function(){
 	var text = '<table><tr><th>Todo</th></tr><!-- do not bother with me -->' +
 			'<% todos.each(function(todo){ %><tr><td><%= todo.name %></td></tr><% }) %></table>',
 		Todos = new can.Observe.List([
-			{id: 1, name: 'Dishes'},
+			{id: 1, name: 'Dishes'}
 		]),
 		compiled = new can.EJS({text: text}).render({todos: Todos}),
 		div = document.createElement('div');
@@ -1296,17 +1296,17 @@ test("HTML comment with element callback", function(){
 		Todos = new can.Observe.List([
 			{id: 1, name: "Dishes"}
 		]),
-		compiled = new can.EJS({text: text.join("\n")}).render({todos: Todos}),
+		compiled = new can.EJS({text: text.join("")}).render({todos: Todos}),
 		div = document.createElement("div")
 
 	div.appendChild(can.view.frag(compiled));
 	equals(div.getElementsByTagName("ul")[0].getElementsByTagName("li").length, 1, "1 item in list");
-	equals(div.getElementsByTagName("ul")[0].getElementsByTagName("li")[0].childNodes.length, 5, "5 nodes in item #1");
+	equals(div.getElementsByTagName("ul")[0].getElementsByTagName("li")[0].childNodes.length, 3, "3 nodes in item #1");
 
 	Todos.push({id: 2, name: "Laundry"});
 	equals(div.getElementsByTagName("ul")[0].getElementsByTagName("li").length, 2, "2 items in list");
-	equals(div.getElementsByTagName("ul")[0].getElementsByTagName("li")[0].childNodes.length, 5, "5 nodes in item #1");
-	equals(div.getElementsByTagName("ul")[0].getElementsByTagName("li")[1].childNodes.length, 5, "5 nodes in item #2");
+	equals(div.getElementsByTagName("ul")[0].getElementsByTagName("li")[0].childNodes.length, 3, "3 nodes in item #1");
+	equals(div.getElementsByTagName("ul")[0].getElementsByTagName("li")[1].childNodes.length, 3, "3 nodes in item #2");
 
 	Todos.splice(0, 2);
 	equals(div.getElementsByTagName("ul")[0].getElementsByTagName("li").length, 0, "0 items in list");
@@ -1324,18 +1324,27 @@ test("Interpolated values when iterating through an Observe.List should still re
 			todos: todos
 		},
 		div = document.createElement('div');
-		
+	
+	// when the data is given as an array:
 	div.appendChild(can.view('issue-153-no-dom', arr));
-	equal(div.innerHTML, "<span>Dishes</span><span>Forks</span>", 'Array item rendered with DOM container');
+	ok(div.childNodes.length == 2 && div.childNodes[0].innerHTML == 'Dishes' && div.childNodes[1].innerHTML == 'Forks', 'Array item rendered with DOM container');
 	div.innerHTML = '';
+
+	// when the data is given as a List:
 	div.appendChild(can.view('issue-153-no-dom', data));
-	equal(div.innerHTML, "<span>Dishes</span><span>Forks</span>", 'List item rendered with DOM container');
+	ok(div.childNodes.length == 2 && div.childNodes[0].innerHTML == 'Dishes' && div.childNodes[1].innerHTML == 'Forks', 'List item rendered with DOM container');
 	div.innerHTML = '';
+
+	// when there's no dom around an arrray:
 	div.appendChild(can.view('issue-153-dom', arr));
 	equal(div.innerHTML, "DishesForks", 'Array item rendered without DOM container');
 	div.innerHTML = '';
+	
+	// when there's no dom around a List:
 	div.appendChild(can.view('issue-153-dom', data));
 	equal(div.innerHTML, "DishesForks", 'List item rendered without DOM container');
+	
+	// changing the list:
 	data.todos[1].attr('name', 'Glasses');
 	data.todos.push(new can.Observe({ id: 3, name: 'Knives' }));
 	equal(div.innerHTML, "DishesGlassesKnives", 'New list item rendered without DOM container');
