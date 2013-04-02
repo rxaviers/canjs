@@ -569,7 +569,7 @@ steal('can/util','can/construct', function(can) {
 				return current.removeAttr(parts)
 			} else {
 				if(isList) {
-					this.splice(prop, 1)
+					this.splice(parseInt(prop, 10), 1)
 				} else if( prop in this._data ){
 					// Otherwise, `delete`.
 					delete this._data[prop];
@@ -1163,6 +1163,13 @@ steal('can/util','can/construct', function(can) {
 				howMany = args[1] = this.length - index;
 			}
 			var removed = splice.apply(this, args);
+			// This splice call in IE8 doesn't actually remove the properties
+			// it just changes .length. So we remove them ourselves:
+			if(this[this.length] !== undefined) {
+				for(var j = 0; j < howMany; ++j) {
+					delete this[this.length + j];
+				}
+			}
 			can.Observe.startBatch();
 			if ( howMany > 0 ) {
 				this._triggerChange(""+index, "remove", undefined, removed);

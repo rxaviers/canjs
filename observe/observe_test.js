@@ -216,13 +216,13 @@ test("remove item in nested array", 4, function(){
 	});
 	
 	state.bind("change", function(ev, attr, how, newVal, old){
-		equals(attr, "array.1");
-		equals(how, "remove")
-		same(old, ["b"]);
+		equals(attr, "array.1", 'attr parameter');
+		equals(how, "remove", 'how parameter')
+		same(old, ["b"], 'old parameter');
 	});
 	
 	state.removeAttr("array.1");
-	equals(undefined, state.attr("array.1") );
+	equals(undefined, state.attr("array.1"), 'attr got removed');
 });
 
 test("remove nested property in item of array", function(){

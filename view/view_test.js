@@ -282,20 +282,24 @@
 	});
 
 	test('Live binding on number inputs', function(){
+		if($('<input type="number" value="5">').val() == '5') {
 
-		var template = can.view.ejs('<input id="candy" type="number" value="<%== state.attr("number") %>" />');
-		var observe = new can.Observe({ number : 2 });
-		var frag = template({ state: observe });
+			var template = can.view.ejs('<input id="candy" type="number" value="<%== state.attr("number") %>" />');
+			var observe = new can.Observe({ number : 2 });
+			var frag = template({ state: observe });
 
-		can.append(can.$("#qunit-test-area"), frag);
+			can.append(can.$("#qunit-test-area"), frag);
 
-		var input = document.getElementById('candy');
+			var input = document.getElementById('candy');
 
-		equal(input.getAttribute('value'), 2, 'render workered');
+			equal(input.getAttribute('value'), 2, 'render worked');
 
-		observe.attr('number', 5);
+			observe.attr('number', 5);
 
-		equal(input.getAttribute('value'), 5, 'update workered');
+			equal(input.getAttribute('value'), 5, 'update worked');
+		} else {
+			ok(true, 'Does not support number inputs.');
+		}
 	})
 
 	test("Resetting a live-bound <textarea> changes its value to __!!__ (#223)", function() {
