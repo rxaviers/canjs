@@ -1,4 +1,4 @@
-steal('can/util', function(can) {
+steal('can/util', 'can/util/bind', function(can, bind) {
 	
 	// returns the
     // - observes and attr methods are called by func
@@ -307,7 +307,7 @@ steal('can/util', function(can) {
 		// get the value right away
 		// TODO: eventually we can defer this until a bind or a read
 		var computedData,
-			bindings = 0,
+			binding = false,
 			computed,
 			canbind = true;
 		if(typeof getterSetter === "function"){
@@ -318,7 +318,7 @@ steal('can/util', function(can) {
 						// If another compute is calling this compute for the value,
 						// it needs to bind to this compute's change so it will re-compute
 						// and re-bind when this compute changes.
-						if(bindings && can.Observe.__reading) {
+						if(binding && can.Observe.__reading) {
 							can.Observe.__reading(computed,'change');
 						}
 						return computedData.value;
@@ -360,35 +360,38 @@ steal('can/util', function(can) {
 		
 		can.cid(computed,"compute")
 		var computeState = { bound: false };
-		/**
-		 * @function bind
-		 * `compute.bind("change", handler(event, newVal, oldVal))`
-		 */
-		computed.bind = function(ev, handler){
-			can.addEvent.apply(computed, arguments);
-			if( bindings === 0 && canbind){
-				computeState.bound = true;
-				// setup live-binding
-				computedData = computeBinder(getterSetter, context || this, function(newValue, oldValue){
-					can.Observe.triggerBatch(computed, "change",[newValue, oldValue])
-				}, computeState);
-			}
-			bindings++;
-		}
-		/**
-		 * @function unbind
-		 * `compute.unbind("change", handler)`
-		 */
-		computed.unbind = function(ev, handler){
-			can.removeEvent.apply(computed, arguments);
-			bindings--;
-			if( bindings === 0 && canbind){
-				computedData.teardown();
-				computeState.bound = false;
-			}
-			
-		};
-		return computed;
+		
+		return can.extend(computed,{
+			_bindsetup: function(){
+				if(canbind){
+					computeState.bound = true;
+					// setup live-binding
+					computedData = computeBinder(getterSetter, context || this, function(newValue, oldValue){
+						console.log(computedData,"changed")
+						can.Observe.triggerBatch(computed, "change",[newValue, oldValue])
+					}, computeState);
+					binding = true;
+				}
+				
+			},
+			_bindteardown: function(){
+				if(canbind){
+					computedData.teardown();
+					computeState.bound = false;
+					binding = false;
+				}
+			},
+			/**
+			 * @function bind
+			 * `compute.bind("change", handler(event, newVal, oldVal))`
+			 */
+			bind: bind.bind,
+			/**
+			 * @function bind
+			 * `compute.bind("change", handler(event, newVal, oldVal))`
+			 */
+			bind: bind.bind
+		});
 	};
 	can.compute.binder = computeBinder;
 	return can.compute;
